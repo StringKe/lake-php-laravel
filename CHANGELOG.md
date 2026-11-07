@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- A read outside a transaction that fails with `Sticky session state lost` (its warehouse node left the cluster) reconnects and runs again once. Writes still throw.
+
 ## [0.1.0] - 2026-09-29
 
 First release.

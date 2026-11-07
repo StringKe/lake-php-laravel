@@ -59,6 +59,7 @@ Values containing `;`, non-scalar values and setting names outside `[A-Za-z0-9_]
 - `upsert()` compiles to `MERGE INTO`. Matched rows only change the update columns, and rows without a match are inserted.
 - `inRandomOrder($seed)` uses `rand($seed)`.
 - Transactions map to `BEGIN`, `COMMIT` and `ROLLBACK`.
+- When the warehouse node that runs a query leaves the cluster, the server answers `Sticky session state lost`. Reads outside a transaction (`SELECT`, `WITH`, `SHOW`, `DESCRIBE`, `EXPLAIN`) reconnect and run again once; writes throw, because the lost node may already have applied them.
 
 ## Schema
 

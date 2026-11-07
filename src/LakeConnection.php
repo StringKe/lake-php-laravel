@@ -4,6 +4,7 @@ namespace StringKe\LakePhp\Laravel;
 
 use Closure;
 use Illuminate\Database\Connection;
+use Illuminate\Database\QueryException;
 use LogicException;
 use Pdo\Lake;
 use PDOStatement;
@@ -64,6 +65,24 @@ class LakeConnection extends Connection
         }
 
         parent::createTransaction();
+    }
+
+    /**
+     * A warehouse node that leaves the cluster takes its running queries with it, and every later request pinned to that node fails with "Sticky session state lost".
+     * Reads run again once on a fresh session. Writes are not repeated: the lost node may already have applied them.
+     *
+     * @param  string  $query
+     * @param  array<mixed>  $bindings
+     */
+    protected function tryAgainIfCausedByLostConnection(QueryException $e, $query, $bindings, Closure $callback)
+    {
+        if (str_contains($e->getMessage(), 'Sticky session state lost') && preg_match('/^\s*(select|with|show|desc|describe|explain)\b/i', $query) === 1) {
+            $this->reconnect();
+
+            return $this->runQueryCallback($query, $bindings, $callback);
+        }
+
+        return parent::tryAgainIfCausedByLostConnection($e, $query, $bindings, $callback);
     }
 
     protected function prepared(PDOStatement $statement)
