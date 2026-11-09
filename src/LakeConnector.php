@@ -19,7 +19,13 @@ final class LakeConnector extends Connector implements ConnectorInterface
      */
     public function connect(array $config): Lake
     {
-        $pdo = $this->createConnection($this->dsn($config), $config, $this->getOptions($config));
+        $options = $this->getOptions($config);
+
+        if (is_string($config['client_name'] ?? null) && $config['client_name'] !== '') {
+            $options[Lake::ATTR_CLIENT_NAME] = $config['client_name'];
+        }
+
+        $pdo = $this->createConnection($this->dsn($config), $config, $options);
 
         if (! $pdo instanceof Lake) {
             throw new LogicException('The lake connection did not return Pdo\Lake; make sure the pdo_lake extension is loaded.');

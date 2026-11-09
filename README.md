@@ -26,7 +26,7 @@ DB::connection('lake')->table('events')
 
 ## Requirements
 
-- PHP 8.4 or newer with the `pdo_lake` extension loaded. Development and the test suite run on PHP 8.5.
+- PHP 8.4 or newer with the `pdo_lake` extension 0.1.5 or newer loaded. Development and the test suite run on PHP 8.5.
 - Laravel 13 (`illuminate/database` and `illuminate/support`).
 
 ## Install
@@ -45,6 +45,7 @@ The service provider is registered through package discovery.
 | `protocol`, `sslmode`, `warehouse`, `tenant`, `connect_timeout` | written into the DSN as is |
 | `settings` | server session settings, for example `timezone` or `max_execute_time_in_seconds`; they travel in the DSN and apply again after a reconnect |
 | `role` | role switched to right after connecting |
+| `client_name` | client name the server records as each query's `user_agent`; defaults to the extension's `lake-php/<version>` |
 | `options` | PDO options |
 
 Values containing `;`, non-scalar values and setting names outside `[A-Za-z0-9_]` are rejected, because they would change the meaning of the DSN.
@@ -81,7 +82,8 @@ Values containing `;`, non-scalar values and setting names outside `[A-Za-z0-9_]
 | `presign()` | presigned upload and download URLs |
 | `useDatabase()`, `useWarehouse()`, `useRole()`, `setSessionSetting()` | session switches |
 | `killQuery()`, `lastQueryId()`, `serverInfo()` | query control and connection info |
-| `lastStatementQueryId()`, `lastStatementStats()` | query id and statistics of the last prepared statement |
+| `lastStatementQueryId()`, `lastStatementStats()` | query id and statistics of the statement the last query ran; `null` after a driver operation that prepares no statement |
+| `setQueryTag()`, `queryTag()` | tag the server records with every later query of the connection in its query history; costs no request and is applied again after a reconnect |
 
 ## Not supported
 

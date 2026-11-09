@@ -18,7 +18,7 @@
   },
   "require": {
     "php": ">=8.4",
-    "ext-pdo_lake": "*",
+    "ext-pdo_lake": ">=0.1.5",
     "illuminate/database": "^13.0",
     "illuminate/support": "^13.0"
   },

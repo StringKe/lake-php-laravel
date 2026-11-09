@@ -16,6 +16,10 @@ class LakeConnection extends Connection
 {
     private ?PDOStatement $lastStatement = null;
 
+    private string $queryTag = '';
+
+    private string $appliedQueryTag = '';
+
     public function getDriverTitle()
     {
         return 'TiDB Cloud Lake';
@@ -90,6 +94,52 @@ class LakeConnection extends Connection
         $this->lastStatement = $statement;
 
         return parent::prepared($statement);
+    }
+
+    /**
+     * Driver operations that prepare no statement must not report the previous statement's id and statistics.
+     *
+     * @param  string  $query
+     * @param  array<mixed>  $bindings
+     */
+    protected function run($query, $bindings, Closure $callback)
+    {
+        $this->lastStatement = null;
+
+        return parent::run($query, $bindings, $callback);
+    }
+
+    /**
+     * Tag recorded by the server with every later query of this connection; an empty string clears it.
+     * It costs no request and is applied again on the session that replaces a lost one.
+     */
+    public function setQueryTag(string $tag): void
+    {
+        $this->queryTag = $tag;
+    }
+
+    public function queryTag(): string
+    {
+        return $this->queryTag;
+    }
+
+    public function getPdo()
+    {
+        $pdo = parent::getPdo();
+
+        if ($this->appliedQueryTag !== $this->queryTag && $pdo instanceof Lake) {
+            $pdo->setQueryTag($this->queryTag);
+            $this->appliedQueryTag = $this->queryTag;
+        }
+
+        return $pdo;
+    }
+
+    public function setPdo($pdo)
+    {
+        $this->appliedQueryTag = '';
+
+        return parent::setPdo($pdo);
     }
 
     public function lake(): Lake
